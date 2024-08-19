@@ -2,7 +2,7 @@
 #define _UTILS_
 
 #include "common.h"
-#include "cusparse.h"
+// #include "cusparse.h"
 
 // print 1D array
 template <typename T>

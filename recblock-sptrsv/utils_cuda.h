@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include "common.h"
-#include <cuda_runtime.h>
+// #include <cuda_runtime.h>
 
 __global__ void matrix_transposition_litelite_cuda(int nnz,
                                                    int *csrColIdx,

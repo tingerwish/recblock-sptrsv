@@ -233,9 +233,8 @@ int main(int argc,  char ** argv)
     cscColPtrTR[0] = 0;
     int *cscRowIdxTR = (int *)malloc(sizeof(int) * nnzTR);
     VALUE_TYPE *cscValTR = (VALUE_TYPE *)malloc(sizeof(VALUE_TYPE) * nnzTR);
-    matrix_transposition(m, n, nnzTR,
-                             csrRowPtrTR, csrColIdxTR, csrValTR,
-                             cscRowIdxTR, cscColPtrTR, cscValTR);
+    matrix_transposition(m, n, nnzTR,csrRowPtrTR, csrColIdxTR, csrValTR,
+                                     cscRowIdxTR, cscColPtrTR, cscValTR);
 
 
     free(csrRowPtrTR);

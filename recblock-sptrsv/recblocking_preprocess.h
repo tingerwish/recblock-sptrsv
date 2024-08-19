@@ -4,8 +4,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "findlevel.h"
-#include <cuda_runtime.h>
-#include "cusparse.h"
+// #include <cuda_runtime.h>
+// #include "cusparse.h"
 #include "tranpose.h"
 #include "utils.h"
 #include "utils_reordering.h"
@@ -574,20 +574,20 @@ void L_preprocessing(int *cscRowIdxTR_new,
                     // step 3: query how much memory used in csrsv2, and allocate the buffer
                     if (sizeof(VALUE_TYPE) == 8)
                         cusparseDcsrsv2_bufferSize((trsv_blk[trsv_count]).handle, (trsv_blk[trsv_count]).trans, blk_m[blk_count], blk_nnz[blk_count], (trsv_blk[trsv_count]).descr,
-                                                   (double *)d_csrValTR, d_csrRowPtrTR, d_csrColIdxTR, (trsv_blk[trsv_count]).info, &pBufferSize);
+                           (double *)d_csrValTR, d_csrRowPtrTR, d_csrColIdxTR, (trsv_blk[trsv_count]).info, &pBufferSize);
                     else if (sizeof(VALUE_TYPE) == 4)
                         cusparseScsrsv2_bufferSize((trsv_blk[trsv_count]).handle, (trsv_blk[trsv_count]).trans, blk_m[blk_count], blk_nnz[blk_count], (trsv_blk[trsv_count]).descr,
-                                                   (float *)d_csrValTR, d_csrRowPtrTR, d_csrColIdxTR, (trsv_blk[trsv_count]).info, &pBufferSize);
+                           (float *)d_csrValTR, d_csrRowPtrTR, d_csrColIdxTR, (trsv_blk[trsv_count]).info, &pBufferSize);
                     // pBuffer returned by cudaMalloc is automatically aligned to 128 bytes.
                     cudaMalloc((void **)&(trsv_blk[trsv_count].pBuffer), pBufferSize);
                     if (sizeof(VALUE_TYPE) == 8)
                         cusparseDcsrsv2_analysis((trsv_blk[trsv_count]).handle, (trsv_blk[trsv_count]).trans, blk_m[blk_count], blk_nnz[blk_count], (trsv_blk[trsv_count]).descr,
-                                                 (double *)d_csrValTR, d_csrRowPtrTR, d_csrColIdxTR,
-                                                 (trsv_blk[trsv_count]).info, (trsv_blk[trsv_count]).policy, (trsv_blk[trsv_count]).pBuffer);
+                           (double *)d_csrValTR, d_csrRowPtrTR, d_csrColIdxTR,
+                           (trsv_blk[trsv_count]).info, (trsv_blk[trsv_count]).policy, (trsv_blk[trsv_count]).pBuffer);
                     else if (sizeof(VALUE_TYPE) == 4)
                         cusparseScsrsv2_analysis((trsv_blk[trsv_count]).handle, (trsv_blk[trsv_count]).trans, blk_m[blk_count], blk_nnz[blk_count], (trsv_blk[trsv_count]).descr,
-                                                 (float *)d_csrValTR, d_csrRowPtrTR, d_csrColIdxTR,
-                                                 (trsv_blk[trsv_count]).info, (trsv_blk[trsv_count]).policy, (trsv_blk[trsv_count]).pBuffer);
+                           (float *)d_csrValTR, d_csrRowPtrTR, d_csrColIdxTR,
+                           (trsv_blk[trsv_count]).info, (trsv_blk[trsv_count]).policy, (trsv_blk[trsv_count]).pBuffer);
 
                     // L has unit diagonal, so no structural zero is reported.
                     status = cusparseXcsrsv2_zeroPivot((trsv_blk[trsv_count]).handle, (trsv_blk[trsv_count]).info, &structural_zero);
@@ -1141,20 +1141,20 @@ void U_preprocessing(int *cscRowIdxTR_new,
                     // step 3: query how much memory used in csrsv2, and allocate the buffer
                     if (sizeof(VALUE_TYPE) == 8)
                         cusparseDcsrsv2_bufferSize((trsv_blk[trsv_count]).handle, (trsv_blk[trsv_count]).trans, blk_m[blk_count], blk_nnz[blk_count], (trsv_blk[trsv_count]).descr,
-                                                   (double *)d_csrValTR, d_csrRowPtrTR, d_csrColIdxTR, (trsv_blk[trsv_count]).info, &pBufferSize);
+                           (double *)d_csrValTR, d_csrRowPtrTR, d_csrColIdxTR, (trsv_blk[trsv_count]).info, &pBufferSize);
                     else if (sizeof(VALUE_TYPE) == 4)
                         cusparseScsrsv2_bufferSize((trsv_blk[trsv_count]).handle, (trsv_blk[trsv_count]).trans, blk_m[blk_count], blk_nnz[blk_count], (trsv_blk[trsv_count]).descr,
-                                                   (float *)d_csrValTR, d_csrRowPtrTR, d_csrColIdxTR, (trsv_blk[trsv_count]).info, &pBufferSize);
+                           (float *)d_csrValTR, d_csrRowPtrTR, d_csrColIdxTR, (trsv_blk[trsv_count]).info, &pBufferSize);
                     // pBuffer returned by cudaMalloc is automatically aligned to 128 bytes.
                     cudaMalloc((void **)&(trsv_blk[trsv_count].pBuffer), pBufferSize);
                     if (sizeof(VALUE_TYPE) == 8)
                         cusparseDcsrsv2_analysis((trsv_blk[trsv_count]).handle, (trsv_blk[trsv_count]).trans, blk_m[blk_count], blk_nnz[blk_count], (trsv_blk[trsv_count]).descr,
-                                                 (double *)d_csrValTR, d_csrRowPtrTR, d_csrColIdxTR,
-                                                 (trsv_blk[trsv_count]).info, (trsv_blk[trsv_count]).policy, (trsv_blk[trsv_count]).pBuffer);
+                           (double *)d_csrValTR, d_csrRowPtrTR, d_csrColIdxTR,
+                           (trsv_blk[trsv_count]).info, (trsv_blk[trsv_count]).policy, (trsv_blk[trsv_count]).pBuffer);
                     else if (sizeof(VALUE_TYPE) == 4)
                         cusparseScsrsv2_analysis((trsv_blk[trsv_count]).handle, (trsv_blk[trsv_count]).trans, blk_m[blk_count], blk_nnz[blk_count], (trsv_blk[trsv_count]).descr,
-                                                 (float *)d_csrValTR, d_csrRowPtrTR, d_csrColIdxTR,
-                                                 (trsv_blk[trsv_count]).info, (trsv_blk[trsv_count]).policy, (trsv_blk[trsv_count]).pBuffer);
+                           (float *)d_csrValTR, d_csrRowPtrTR, d_csrColIdxTR,
+                           (trsv_blk[trsv_count]).info, (trsv_blk[trsv_count]).policy, (trsv_blk[trsv_count]).pBuffer);
 
                     // L has unit diagonal, so no structural zero is reported.
                     status = cusparseXcsrsv2_zeroPivot((trsv_blk[trsv_count]).handle, (trsv_blk[trsv_count]).info, &structural_zero);
