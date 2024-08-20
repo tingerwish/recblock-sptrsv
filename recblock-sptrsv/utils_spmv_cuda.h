@@ -86,7 +86,7 @@ __global__ void spmv_threadsca_dcsr_cuda_executor(const int *d_csrRowPtr,
                                                   const int m,
                                                   const VALUE_TYPE *d_x,
                                                   VALUE_TYPE *d_y,
-                                                  const int *d_row_perm)
+                                                  const int *d_row_perm)//行重排数组，用于指定输出向量的行顺序。
 {
     const int global_id = blockIdx.x * blockDim.x + threadIdx.x;
     if (global_id < m)

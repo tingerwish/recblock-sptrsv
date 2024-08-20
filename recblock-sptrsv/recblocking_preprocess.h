@@ -414,7 +414,7 @@ void L_preprocessing(int *cscRowIdxTR_new,
                      int idx_size,
                      int dcsr_size)
 {
-    // get auxiliary arrary for our datastruct
+    // 根据设定的  nlevel 计算子矩阵的个数
     int tri_block = pow(2, nlevel);
     int squ_block = tri_block - 1;
     int sum_block = tri_block + squ_block;
@@ -427,7 +427,7 @@ void L_preprocessing(int *cscRowIdxTR_new,
     int recblock_nnz_ptr = 0;
     for (blk_count = 0; blk_count < sum_block; blk_count++)
     {
-        if (blk_count % 2 == 0)
+        if (blk_count % 2 == 0) // 三角块
         {
             int cu_flag = 0;
             int *cscColPtrTR_sub = (int *)malloc(sizeof(int) * (blk_n[blk_count] + 1));
