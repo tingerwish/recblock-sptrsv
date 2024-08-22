@@ -12,10 +12,10 @@ int findlevel(const int *cscColPtr,
               int *levelPtr,
               int *levelItem)
 {
-    // prepare arrays for level-sets of size maximum m or n
+    // 准备大小为最大m或n的level-sets数组
     int *indegree = (int *)malloc(m * sizeof(int));
 
-    // prepare in-degree
+    // 准备入度
     for (int i = 0; i < m; i++)
     {
         indegree[i] = csrRowPtr[i + 1] - csrRowPtr[i];
@@ -26,13 +26,10 @@ int findlevel(const int *cscColPtr,
     // printf("%d ", indegree[i]);
     // printf("\n");
 
-
-    // find root items
+    // 找到根节点
     int lv = 0;
     int ptr = 0;
-
     levelPtr[0] = 0;
-
     for (int i = 0; i < m; i++)
     {
         if (indegree[i] == 1)
@@ -46,7 +43,7 @@ int findlevel(const int *cscColPtr,
     // printf("%d ", levelItem[i]);
     // printf("\n");
     
-    // #items in the 1st level
+    // 第1层的节点数
     levelPtr[1] = ptr;
     // printf("shoule lvptr = %d\n\n\n", levelPtr[1]);
 
@@ -72,13 +69,12 @@ int findlevel(const int *cscColPtr,
     }
 
     *nlevel = lvi;
-        // printf("lvi = %d\n", lvi);
+    // printf("lvi = %d\n", lvi);
     // printf("levelPtr:\n");
     // for (int i = 0; i < m; i++)
     //     printf("%d ", levelPtr[i]);
 
     free(indegree);
-
     return 0;
 }
 

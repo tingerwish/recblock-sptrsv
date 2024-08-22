@@ -93,12 +93,9 @@ void mat_preprocessing(const int *cscColPtrTR,
                     }
                 }
                 blk_nnz[i] = tri_nnz;
-
                 loc_off[i] = tri_up;
-
                 tri_up += step_size;
                 tri_down += step_size;
-
                 tri_count++;
             }
             else
@@ -114,15 +111,12 @@ void mat_preprocessing(const int *cscColPtrTR,
                         if (temp == figure[j])
                         {
                             rec_down = rec_up + temp * step_size;
-
                             flag = 1;
                             break;
                         }
                     }
-
                     if (flag == 1)
                         break;
-
                     for (int j = 0; j <= nlevel; j++)
                     {
                         if (temp < figure[j])
@@ -132,7 +126,6 @@ void mat_preprocessing(const int *cscColPtrTR,
                         }
                     }
                 }
-
                 rec_right = rec_up;
                 rec_left = rec_right - (rec_down - rec_up);
 
@@ -469,6 +462,7 @@ void L_preprocessing(int *cscRowIdxTR_new,
             int nlv = 0;
             int *levelItem_local = (int *)malloc(blk_m[blk_count] * sizeof(int));
             int *levelPtr_local = (int *)malloc((blk_m[blk_count] + 1) * sizeof(int));
+            // 判断当前块中的非零元素个数是否等于块中的元素个数
             int fasttrack = blk_m[blk_count] == blk_nnz[blk_count] ? 1 : 0;
 
             // for (int i = 0; i < blk_nnz[blk_count]+1; i++)
@@ -573,7 +567,8 @@ void L_preprocessing(int *cscRowIdxTR_new,
 
                     // step 3: query how much memory used in csrsv2, and allocate the buffer
                     if (sizeof(VALUE_TYPE) == 8)
-                        cusparseDcsrsv2_bufferSize((trsv_blk[trsv_count]).handle, (trsv_blk[trsv_count]).trans, blk_m[blk_count], blk_nnz[blk_count], (trsv_blk[trsv_count]).descr,
+                        cusparseDcsrsv2_bufferSize((trsv_blk[trsv_count]).handle, (trsv_blk[trsv_count]).trans, blk_m[blk_count], 
+                        blk_nnz[blk_count], (trsv_blk[trsv_count]).descr,
                            (double *)d_csrValTR, d_csrRowPtrTR, d_csrColIdxTR, (trsv_blk[trsv_count]).info, &pBufferSize);
                     else if (sizeof(VALUE_TYPE) == 4)
                         cusparseScsrsv2_bufferSize((trsv_blk[trsv_count]).handle, (trsv_blk[trsv_count]).trans, blk_m[blk_count], blk_nnz[blk_count], (trsv_blk[trsv_count]).descr,
@@ -1344,6 +1339,7 @@ void U_preprocessing(int *cscRowIdxTR_new,
             }
             int m_new = i_new - 1;
             int nnzr = (blk_nnz[blk_count] - longlen) / m_new;
+            // 计算空块的比例
             double empty_ratio = 100 * (double)(blk_m[blk_count] - m_new) / (double)blk_m[blk_count];
 
             int dcsr_i = 0;

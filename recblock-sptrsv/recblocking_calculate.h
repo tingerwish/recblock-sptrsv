@@ -49,7 +49,8 @@ void L_calculate(SpMV_block *mv_blk,
             {
                 if (trsv_blk[tri_index].method == 0)
                 {
-                    sptrsv_syncfree_csc_cuda_executor_fasttrack<<<trsv_blk[tri_index].num_blocks, trsv_blk[tri_index].num_threads>>>(&d_recblock_Ptr[ptr_offset[i] - 1], &d_recblock_Index[index_offset[i]], &d_recblock_Val[index_offset[i]],
+                    sptrsv_syncfree_csc_cuda_executor_fasttrack<<<trsv_blk[tri_index].num_blocks, trsv_blk[tri_index].num_threads>>>
+                    (&d_recblock_Ptr[ptr_offset[i] - 1], &d_recblock_Index[index_offset[i]], &d_recblock_Val[index_offset[i]],
                     trsv_blk[tri_index].m, trsv_blk[tri_index].substitution, &b_t[b_offset], &x_t[x_offset]);
                 }
                 else if (trsv_blk[tri_index].method == 1)
@@ -71,7 +72,8 @@ void L_calculate(SpMV_block *mv_blk,
                       trsv_blk[tri_index].policy, // 策略
                       trsv_blk[tri_index].pBuffer); // 缓冲区
                     else if (sizeof(VALUE_TYPE) == 4)
-                        cusparseScsrsv2_solve(trsv_blk[tri_index].handle, trsv_blk[tri_index].trans, trsv_blk[tri_index].m, trsv_blk[tri_index].nnzTR, &(trsv_blk[tri_index].alpha_float), trsv_blk[tri_index].descr,
+                        cusparseScsrsv2_solve(trsv_blk[tri_index].handle, trsv_blk[tri_index].trans, trsv_blk[tri_index].m, trsv_blk[tri_index].nnzTR, 
+                        &(trsv_blk[tri_index].alpha_float), trsv_blk[tri_index].descr,
                         (float *)(&d_recblock_Val[index_offset[i]]), &d_recblock_Ptr[ptr_offset[i]], &d_recblock_Index[index_offset[i]], trsv_blk[tri_index].info,
                         (float *)&(b_t[b_offset]), (float *)&(x_t[x_offset]), trsv_blk[tri_index].policy, trsv_blk[tri_index].pBuffer);
                 }
@@ -83,8 +85,10 @@ void L_calculate(SpMV_block *mv_blk,
                         {
                             trsv_blk[tri_index].num_threads = WARP_PER_BLOCK * WARP_SIZE;
                             trsv_blk[tri_index].num_blocks = ceil((double)(trsv_blk[tri_index].m_lv_array[li]) / (double)(trsv_blk[tri_index].num_threads));
-                            sptrsv_levelset_threadsca_csr_cuda_executor_fasttrack<<<trsv_blk[tri_index].num_blocks, trsv_blk[tri_index].num_threads>>>(&d_recblock_Ptr[ptr_offset[i] - 1], &d_recblock_Index[index_offset[i]], &d_recblock_Val[index_offset[i]],
-                            trsv_blk[tri_index].m_lv_array[li], trsv_blk[tri_index].m, trsv_blk[tri_index].offset_array[li], trsv_blk[tri_index].substitution, &b_t[b_offset], &x_t[x_offset]);
+                            sptrsv_levelset_threadsca_csr_cuda_executor_fasttrack<<<trsv_blk[tri_index].num_blocks, trsv_blk[tri_index].num_threads>>>
+                            (&d_recblock_Ptr[ptr_offset[i] - 1], &d_recblock_Index[index_offset[i]], &d_recblock_Val[index_offset[i]],
+                            trsv_blk[tri_index].m_lv_array[li], trsv_blk[tri_index].m, trsv_blk[tri_index].offset_array[li], trsv_blk[tri_index].substitution, 
+                            &b_t[b_offset], &x_t[x_offset]);
                         }
                         else
                         {
@@ -92,15 +96,19 @@ void L_calculate(SpMV_block *mv_blk,
                             {
                                 trsv_blk[tri_index].num_threads = WARP_PER_BLOCK * WARP_SIZE;
                                 trsv_blk[tri_index].num_blocks = ceil((double)(trsv_blk[tri_index].m_lv_array[li]) / (double)(trsv_blk[tri_index].num_threads));
-                                sptrsv_levelset_threadsca_csr_cuda_executor<<<trsv_blk[tri_index].num_blocks, trsv_blk[tri_index].num_threads>>>(&d_recblock_Ptr[ptr_offset[i] - 1], &d_recblock_Index[index_offset[i]], &d_recblock_Val[index_offset[i]],
-                                trsv_blk[tri_index].m_lv_array[li], trsv_blk[tri_index].m, trsv_blk[tri_index].offset_array[li], trsv_blk[tri_index].substitution, &b_t[b_offset], &x_t[x_offset]);
+                                sptrsv_levelset_threadsca_csr_cuda_executor<<<trsv_blk[tri_index].num_blocks, trsv_blk[tri_index].num_threads>>>
+                                (&d_recblock_Ptr[ptr_offset[i] - 1], &d_recblock_Index[index_offset[i]], &d_recblock_Val[index_offset[i]],
+                                trsv_blk[tri_index].m_lv_array[li], trsv_blk[tri_index].m, trsv_blk[tri_index].offset_array[li], trsv_blk[tri_index].substitution, 
+                                &b_t[b_offset], &x_t[x_offset]);
                             }
                             else
                             {
                                 trsv_blk[tri_index].num_threads = WARP_PER_BLOCK * WARP_SIZE;
                                 trsv_blk[tri_index].num_blocks = ceil((double)(trsv_blk[tri_index].m_lv_array[li]) / (double)((trsv_blk[tri_index].num_threads) / WARP_SIZE));
-                                sptrsv_levelset_warpvec_csr_cuda_executor<<<trsv_blk[tri_index].num_blocks, trsv_blk[tri_index].num_threads>>>(&d_recblock_Ptr[ptr_offset[i] - 1], &d_recblock_Index[index_offset[i]], &d_recblock_Val[index_offset[i]],
-                                trsv_blk[tri_index].m_lv_array[li], trsv_blk[tri_index].m, trsv_blk[tri_index].offset_array[li], trsv_blk[tri_index].substitution, &b_t[b_offset], &x_t[x_offset]);
+                                sptrsv_levelset_warpvec_csr_cuda_executor<<<trsv_blk[tri_index].num_blocks, trsv_blk[tri_index].num_threads>>>
+                                (&d_recblock_Ptr[ptr_offset[i] - 1], &d_recblock_Index[index_offset[i]], &d_recblock_Val[index_offset[i]],
+                                trsv_blk[tri_index].m_lv_array[li], trsv_blk[tri_index].m, trsv_blk[tri_index].offset_array[li], trsv_blk[tri_index].substitution, 
+                                &b_t[b_offset], &x_t[x_offset]);
                             }
                         }
                     }

@@ -12,10 +12,10 @@
 #include "utils_reordering.h"
 #include "findlevel.h"
 #include "utils.h"
-#include <cuda_runtime.h>
-#include <thrust/sort.h>
-#include <thrust/scan.h>
-#include <thrust/execution_policy.h>
+// #include <cuda_runtime.h>
+// #include <thrust/sort.h>
+// #include <thrust/scan.h>
+// #include <thrust/execution_policy.h>
 #include "utils_cuda.h"
 
 void recblocking_solver_cuda(int *d_cscColPtrTR,
@@ -91,9 +91,9 @@ void recblocking_solver_cuda(int *d_cscColPtrTR,
 
         // ---------------------reorder end----------------------
         mat_preprocessing_cuda(d_cscColPtrTR_new, d_cscRowIdxTR_new, d_cscValTR_new, m, n,
-                               lv, loc_off, tmp_off, blk_m, blk_n, d_blk_nnz, subtri_upbound,
-                               subtri_downbound, subrec_upbound, subrec_downbound, subrec_rightbound,
-                               subrec_leftbound, substitution);
+                               lv, loc_off, tmp_off, blk_m, blk_n, d_blk_nnz, 
+                               subtri_upbound,subtri_downbound, 
+                               subrec_upbound, subrec_downbound, subrec_rightbound,subrec_leftbound, substitution);
         cudaMemcpy(blk_nnz, d_blk_nnz, sizeof(int) * (squ_block + tri_block), cudaMemcpyDeviceToHost);
 
         for (int i = 0; i < sum_block; i++)
@@ -148,11 +148,9 @@ void recblocking_solver_cuda(int *d_cscColPtrTR,
                 int downbound = subtri_downbound[blk_count];
                 store_into_subtrimat_ptr<<<num_blocks, num_threads>>>(upbound, downbound, d_cscColPtrTR_new,
                                                                       d_cscRowIdxTR_new, d_cscColPtrTR_sub, substitution);
-                thrust::exclusive_scan(thrust::device, d_cscColPtrTR_sub,
-                                       d_cscColPtrTR_sub + blk_n[blk_count] + 1, d_cscColPtrTR_sub, 0);
+                thrust::exclusive_scan(thrust::device, d_cscColPtrTR_sub,d_cscColPtrTR_sub + blk_n[blk_count] + 1, d_cscColPtrTR_sub, 0);
                 store_into_subtrimat_idxval<<<num_blocks, num_threads>>>(upbound, downbound, d_cscColPtrTR_new, d_cscRowIdxTR_new,
-                                                                         d_cscValTR_new, d_cscColPtrTR_sub, d_cscRowIdxTR_sub,
-                                                                         d_cscValTR_sub, substitution);
+                d_cscValTR_new, d_cscColPtrTR_sub, d_cscRowIdxTR_sub,d_cscValTR_sub, substitution);
 
                 int *d_csrRowPtrTR_sub;
                 int *d_csrColIdxTR_sub;
@@ -197,10 +195,10 @@ void recblocking_solver_cuda(int *d_cscColPtrTR,
                     pre_store_to_recblockdata<<<num_blocks, num_threads>>>(blk_n[blk_count], d_cscColPtrTR_sub, d_recblock_Ptr + ptr_offset[blk_count] - 1);
 
                     thrust::exclusive_scan(thrust::device, d_recblock_Ptr + ptr_offset[blk_count] - 1,
-                                           d_recblock_Ptr + ptr_offset[blk_count] + blk_n[blk_count], d_recblock_Ptr + ptr_offset[blk_count] - 1, recblock_nnz_ptr);
+                    d_recblock_Ptr + ptr_offset[blk_count] + blk_n[blk_count], d_recblock_Ptr + ptr_offset[blk_count] - 1, recblock_nnz_ptr);
 
                     store_to_recblockdata<<<num_blocks, num_threads>>>(blk_n[blk_count], d_cscColPtrTR_sub, d_cscRowIdxTR_sub,
-                                                                       d_cscValTR_sub, d_recblock_Index, d_recblock_Val, d_recblock_Ptr + ptr_offset[blk_count] - 1, recblock_nnz_ptr);
+                    d_cscValTR_sub, d_recblock_Index, d_recblock_Val, d_recblock_Ptr + ptr_offset[blk_count] - 1, recblock_nnz_ptr);
                 }
                 else
                 {
@@ -232,7 +230,7 @@ void recblocking_solver_cuda(int *d_cscColPtrTR,
                         (trsv_blk[trsv_count]).policy = CUSPARSE_SOLVE_POLICY_USE_LEVEL;
                         (trsv_blk[trsv_count]).trans = CUSPARSE_OPERATION_NON_TRANSPOSE;
 
-                        // step 1: create a descriptor which contains
+                        // step 1: 创建矩阵描述信息
                         // - matrix L is base-0
                         // - matrix L is lower triangular
                         // - matrix L has unit diagonal, specified by parameter CUSPARSE_DIAG_TYPE_UNIT
@@ -252,20 +250,18 @@ void recblocking_solver_cuda(int *d_cscColPtrTR,
                         // step 3: query how much memory used in csrsv2, and allocate the buffer
                         if (sizeof(VALUE_TYPE) == 8)
                             cusparseDcsrsv2_bufferSize((trsv_blk[trsv_count]).handle, (trsv_blk[trsv_count]).trans, blk_m[blk_count], blk_nnz[blk_count], (trsv_blk[trsv_count]).descr,
-                                                       (double *)d_csrValTR_sub, d_csrRowPtrTR_sub, d_csrColIdxTR_sub, (trsv_blk[trsv_count]).info, &pBufferSize);
+                            (double *)d_csrValTR_sub, d_csrRowPtrTR_sub, d_csrColIdxTR_sub, (trsv_blk[trsv_count]).info, &pBufferSize);
                         else if (sizeof(VALUE_TYPE) == 4)
                             cusparseScsrsv2_bufferSize((trsv_blk[trsv_count]).handle, (trsv_blk[trsv_count]).trans, blk_m[blk_count], blk_nnz[blk_count], (trsv_blk[trsv_count]).descr,
-                                                       (float *)d_csrValTR_sub, d_csrRowPtrTR_sub, d_csrColIdxTR_sub, (trsv_blk[trsv_count]).info, &pBufferSize);
+                            (float *)d_csrValTR_sub, d_csrRowPtrTR_sub, d_csrColIdxTR_sub, (trsv_blk[trsv_count]).info, &pBufferSize);
                         // pBuffer returned by cudaMalloc is automatically aligned to 128 bytes.
                         cudaMalloc((void **)&(trsv_blk[trsv_count].pBuffer), pBufferSize);
                         if (sizeof(VALUE_TYPE) == 8)
-                            cusparseDcsrsv2_analysis((trsv_blk[trsv_count]).handle, (trsv_blk[trsv_count]).trans, blk_m[blk_count], blk_nnz[blk_count], (trsv_blk[trsv_count]).descr,
-                                                     (double *)d_csrValTR_sub, d_csrRowPtrTR_sub, d_csrColIdxTR_sub,
-                                                     (trsv_blk[trsv_count]).info, (trsv_blk[trsv_count]).policy, (trsv_blk[trsv_count]).pBuffer);
+                            cusparseDcsrsv2_analysis((trsv_blk[trsv_count]).handle, (trsv_blk[trsv_count]).trans, blk_m[blk_count], blk_nnz[blk_count], (trsv_blk[trsv_count]).descr,(double *)d_csrValTR_sub, d_csrRowPtrTR_sub, d_csrColIdxTR_sub,
+                            (trsv_blk[trsv_count]).info, (trsv_blk[trsv_count]).policy, (trsv_blk[trsv_count]).pBuffer);
                         else if (sizeof(VALUE_TYPE) == 4)
-                            cusparseScsrsv2_analysis((trsv_blk[trsv_count]).handle, (trsv_blk[trsv_count]).trans, blk_m[blk_count], blk_nnz[blk_count], (trsv_blk[trsv_count]).descr,
-                                                     (float *)d_csrValTR_sub, d_csrRowPtrTR_sub, d_csrColIdxTR_sub,
-                                                     (trsv_blk[trsv_count]).info, (trsv_blk[trsv_count]).policy, (trsv_blk[trsv_count]).pBuffer);
+                            cusparseScsrsv2_analysis((trsv_blk[trsv_count]).handle, (trsv_blk[trsv_count]).trans, blk_m[blk_count], blk_nnz[blk_count], (trsv_blk[trsv_count]).descr,(float *)d_csrValTR_sub, d_csrRowPtrTR_sub, d_csrColIdxTR_sub,
+                            (trsv_blk[trsv_count]).info, (trsv_blk[trsv_count]).policy, (trsv_blk[trsv_count]).pBuffer);
 
                         // L has unit diagonal, so no structural zero is reported.
                         status = cusparseXcsrsv2_zeroPivot((trsv_blk[trsv_count]).handle, (trsv_blk[trsv_count]).info, &structural_zero);
@@ -283,10 +279,10 @@ void recblocking_solver_cuda(int *d_cscColPtrTR,
                         pre_store_to_recblockdata<<<num_blocks, num_threads>>>(blk_m[blk_count], d_csrRowPtrTR_sub, d_recblock_Ptr + ptr_offset[blk_count]);
 
                         thrust::exclusive_scan(thrust::device, d_recblock_Ptr + ptr_offset[blk_count],
-                                               d_recblock_Ptr + ptr_offset[blk_count] + blk_m[blk_count] + 1, d_recblock_Ptr + ptr_offset[blk_count], 0);
+                        d_recblock_Ptr + ptr_offset[blk_count] + blk_m[blk_count] + 1, d_recblock_Ptr + ptr_offset[blk_count], 0);
 
                         store_to_recblockdata<<<num_blocks, num_threads>>>(blk_m[blk_count], d_csrRowPtrTR_sub, d_csrColIdxTR_sub,
-                                                                           d_csrValTR_sub, d_recblock_Index, d_recblock_Val, d_recblock_Ptr + ptr_offset[blk_count], recblock_nnz_ptr);
+                        d_csrValTR_sub, d_recblock_Index, d_recblock_Val, d_recblock_Ptr + ptr_offset[blk_count], recblock_nnz_ptr);
                         cu_flag = 1;
                     }
                     else if ((nnzr <= 15 && nlv <= 20) || (nnzr == 1 && nlv <= 100))
@@ -323,10 +319,10 @@ void recblocking_solver_cuda(int *d_cscColPtrTR,
                         pre_store_to_recblockdata<<<num_blocks, num_threads>>>(blk_n[blk_count], d_csrRowPtrTR_sub, d_recblock_Ptr + ptr_offset[blk_count] - 1);
 
                         thrust::exclusive_scan(thrust::device, d_recblock_Ptr + ptr_offset[blk_count] - 1,
-                                               d_recblock_Ptr + ptr_offset[blk_count] + blk_n[blk_count], d_recblock_Ptr + ptr_offset[blk_count] - 1, recblock_nnz_ptr);
+                        d_recblock_Ptr + ptr_offset[blk_count] + blk_n[blk_count], d_recblock_Ptr + ptr_offset[blk_count] - 1, recblock_nnz_ptr);
 
                         store_to_recblockdata<<<num_blocks, num_threads>>>(blk_n[blk_count], d_csrRowPtrTR_sub, d_csrColIdxTR_sub,
-                                                                           d_csrValTR_sub, d_recblock_Index, d_recblock_Val, d_recblock_Ptr + ptr_offset[blk_count] - 1, recblock_nnz_ptr);
+                        d_csrValTR_sub, d_recblock_Index, d_recblock_Val, d_recblock_Ptr + ptr_offset[blk_count] - 1, recblock_nnz_ptr);
 
                         free(levelPtr_local);
                         free(levelItem_local);
@@ -344,7 +340,8 @@ void recblocking_solver_cuda(int *d_cscColPtrTR,
 
                         int num_threads = 128;
                         int num_blocks = ceil((double)blk_nnz[blk_count] / (double)num_threads);
-                        sptrsv_syncfree_csc_cuda_analyser<<<num_blocks, num_threads>>>(d_cscRowIdxTR_sub, blk_m[blk_count], blk_nnz[blk_count], (trsv_blk[trsv_count]).d_graphInDegree);
+                        sptrsv_syncfree_csc_cuda_analyser<<<num_blocks, num_threads>>>
+                        (d_cscRowIdxTR_sub, blk_m[blk_count], blk_nnz[blk_count], (trsv_blk[trsv_count]).d_graphInDegree);
                         cudaDeviceSynchronize();
                         cudaMalloc((void **)&(trsv_blk[trsv_count]).d_left_sum, sizeof(VALUE_TYPE) * blk_m[blk_count]);
                         cudaMemset((trsv_blk[trsv_count]).d_left_sum, 0, sizeof(VALUE_TYPE) * blk_m[blk_count]);
@@ -361,9 +358,9 @@ void recblocking_solver_cuda(int *d_cscColPtrTR,
                         num_blocks = ceil((double)blk_n[blk_count] / (double)num_threads);
                         pre_store_to_recblockdata<<<num_blocks, num_threads>>>(blk_n[blk_count], d_cscColPtrTR_sub, d_recblock_Ptr + ptr_offset[blk_count] - 1);
                         thrust::exclusive_scan(thrust::device, d_recblock_Ptr + ptr_offset[blk_count] - 1,
-                                               d_recblock_Ptr + ptr_offset[blk_count] + blk_n[blk_count], d_recblock_Ptr + ptr_offset[blk_count] - 1, recblock_nnz_ptr);
+                        d_recblock_Ptr + ptr_offset[blk_count] + blk_n[blk_count], d_recblock_Ptr + ptr_offset[blk_count] - 1, recblock_nnz_ptr);
                         store_to_recblockdata<<<num_blocks, num_threads>>>(blk_n[blk_count], d_cscColPtrTR_sub, d_cscRowIdxTR_sub,
-                                                                           d_cscValTR_sub, d_recblock_Index, d_recblock_Val, d_recblock_Ptr + ptr_offset[blk_count] - 1, recblock_nnz_ptr);
+                        d_cscValTR_sub, d_recblock_Index, d_recblock_Val, d_recblock_Ptr + ptr_offset[blk_count] - 1, recblock_nnz_ptr);
                     }
                 }
 
@@ -612,7 +609,7 @@ void recblocking_solver_cuda(int *d_cscColPtrTR,
         cudaFree(d_recblock_dcsr_rowidx);
         cudaFree(d_recblock_Val);
     }
-    else
+    else // 下三角
     {
         int *d_cscColPtrTR_new;
         int *d_cscRowIdxTR_new;

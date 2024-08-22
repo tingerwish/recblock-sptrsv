@@ -301,8 +301,7 @@ void mat_preprocessing_cuda(int *cscColPtrTR,
                 subtri_downbound[i] = tri_down;
                 int num_threads = WARP_PER_BLOCK * WARP_SIZE;
                 int num_blocks = ceil((double)(blk_m[i]) / (double)num_threads);
-                cal_triblk_nnz<<<num_blocks, num_threads>>>(cscColPtrTR, cscRowIdxTR, tri_up, tri_down,
-                                                            substitution, &d_blk_nnz[i]);
+                cal_triblk_nnz<<<num_blocks, num_threads>>>(cscColPtrTR, cscRowIdxTR, tri_up, tri_down,substitution, &d_blk_nnz[i]);
 
                 loc_off[i] = tri_up;
 
@@ -354,15 +353,12 @@ void mat_preprocessing_cuda(int *cscColPtrTR,
                         break;
                     }
                 }
-
                 blk_m[i] = rec_down - rec_up;
                 blk_n[i] = rec_right - rec_left;
 
                 int num_threads = WARP_PER_BLOCK * WARP_SIZE;
                 int num_blocks = ceil((double)(blk_n[i]) / (double)num_threads);
-                cal_recblk_nnz<<<num_blocks, num_threads>>>(cscColPtrTR, cscRowIdxTR, rec_up, rec_down,
-                                                            rec_left, rec_right, &d_blk_nnz[i]);
-
+                cal_recblk_nnz<<<num_blocks, num_threads>>>(cscColPtrTR, cscRowIdxTR, rec_up, rec_down,rec_left, rec_right, &d_blk_nnz[i]);
                 tmp_off[i] = rec_up;
                 loc_off[i] = rec_left;
 

@@ -2,8 +2,8 @@
 #define _UTILS_SPTRSV_CUDA_
 
 #include "common.h"
-#include <cuda_runtime.h>
-#include "cusparse.h"
+// #include <cuda_runtime.h>
+// #include "cusparse.h"
 #include "utils_reordering.h"
 
 typedef struct SpTRSV_block
@@ -123,12 +123,18 @@ __global__ void sptrsv_levelset_threadsca_csr_cuda_executor_fasttrack(const int 
                                                                       const VALUE_TYPE *d_b,
                                                                       VALUE_TYPE *d_x)
 {
+    // 计算全局线程ID
     const int global_x_id = blockIdx.x * blockDim.x + threadIdx.x;
+    // 如果全局线程ID小于m，则执行以下操作
     if (global_x_id < m)
     {
+        // 计算行索引
         int rowidx = global_x_id + offset;
+        // 如果substitution为SUBSTITUTION_FORWARD，则rowidx不变，否则rowidx为m_total - 1 - global_x_id - offset
         rowidx = substitution == SUBSTITUTION_FORWARD ? rowidx : m_total - 1 - global_x_id - offset;
+        // 计算pos
         const int pos = substitution == SUBSTITUTION_FORWARD ? (d_csrRowPtr[rowidx + 1] - d_csrRowPtr[0]) - 1 : (d_csrRowPtr[rowidx] - d_csrRowPtr[0]);
+        // 计算d_x[rowidx]
         d_x[rowidx] = d_b[rowidx] / d_csrVal[pos];
     }
 }

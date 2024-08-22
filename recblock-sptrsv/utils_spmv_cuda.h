@@ -2,8 +2,8 @@
 #define _UTILS_SPMV_CUDA_
 
 #include "common.h"
-#include <cuda_runtime.h>
-#include "cusparse.h"
+// #include <cuda_runtime.h>
+// #include "cusparse.h"
 #include "utils_reordering.h"
 
 #define LONGROW_THRESHOLD 2048
