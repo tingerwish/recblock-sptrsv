@@ -115,8 +115,7 @@ void levelset_reordering_colrow_csc(const int *cscColPtrTR,
     int *csrRowPtrTR = (int *)malloc((m + 1) * sizeof(int));
 
     // transpose from csc to csr
-    matrix_transposition_litelite(m, n, nnzTR,
-                                  cscColPtrTR, cscRowIdxTR, csrRowPtrTR);
+    matrix_transposition_litelite(m, n, nnzTR,cscColPtrTR, cscRowIdxTR, csrRowPtrTR);
     
     // for (int i = 0; i < m + 1; i++)
     //     printf("%d ", csrRowPtrTR[i]);

@@ -54,7 +54,7 @@ void mat_preprocessing(const int *cscColPtrTR,
         }
     }
 
-    if (substitution == SUBSTITUTION_FORWARD)
+    if (substitution == SUBSTITUTION_FORWARD) // 上三角
     {
         int tri_up = 0;
         int tri_down = step_size;
@@ -66,7 +66,7 @@ void mat_preprocessing(const int *cscColPtrTR,
         int tri_count = 0;
         for (int i = 0; i < sum_block; i++)
         {
-            if (i % 2 == 0)
+            if (i % 2 == 0) // 获得三角块的上下界
             {
                 blk_m[i] = tri_down - tri_up;
                 blk_n[i] = tri_down - tri_up;
@@ -100,7 +100,7 @@ void mat_preprocessing(const int *cscColPtrTR,
             }
             else
             {
-                rec_up = tri_down - step_size;
+                rec_up = tri_down - step_size; // 获得矩阵块上下界
 
                 int flag = 0;
                 int temp = tri_count;
@@ -169,7 +169,7 @@ void mat_preprocessing(const int *cscColPtrTR,
             }
         }
     }
-    else
+    else  // 下三角
     {
         int tri_up = m - step_size;
         int tri_down = m;
@@ -288,32 +288,33 @@ void mat_preprocessing(const int *cscColPtrTR,
     free(judge);
 }
 
-void get_recblock_size(int *cscRowIdxTR,
-                       int *cscColPtrTR,
-                       VALUE_TYPE *cscValTR,
-                       int *cscRowIdxTR_new,
-                       int *cscColPtrTR_new,
-                       VALUE_TYPE *cscValTR_new,
-                       int nnzTR,
-                       int m,
-                       int n,
-                       int *levelItem,
-                       int substitution,
-                       int nlevel,
-                       int *loc_off,
-                       int *tmp_off,
-                       int *blk_m,
-                       int *blk_n,
-                       int *blk_nnz,
-                       int *subtri_upbound,
-                       int *subtri_downbound,
-                       int *subrec_upbound,
-                       int *subrec_downbound,
-                       int *subrec_rightbound,
-                       int *subrec_leftbound,
-                       int *ptr_size,
-                       int *idx_size,
-                       int *dcsr_size)
+
+void get_recblock_size(int *cscRowIdxTR,           // cscRowIdxTR：重构后的行索引             
+                       int *cscColPtrTR,           // cscColPtrTR：重构后的列指针             
+                       VALUE_TYPE *cscValTR,       // cscValTR：重构后的值                 
+                       int *cscRowIdxTR_new,       // cscRowIdxTR_new：重构后的新行索引                 
+                       int *cscColPtrTR_new,       // cscColPtrTR_new：重构后的新列指针                 
+                       VALUE_TYPE *cscValTR_new,   // cscValTR_new：重构后的新值                     
+                       int nnzTR,                  // nnzTR：重构后的非零元素个数     
+                       int m,                      // m：矩阵的行数 
+                       int n,                      // n：矩阵的列数 
+                       int *levelItem,             // levelItem：层次项         
+                       int substitution,           // substitution：替换             
+                       int nlevel,                 // nlevel：层次数     
+                       int *loc_off,               // loc_off：局部偏移量         
+                       int *tmp_off,               // tmp_off：临时偏移量         
+                       int *blk_m,                 // blk_m：块行数     
+                       int *blk_n,                 // blk_n：块列数     
+                       int *blk_nnz,               // blk_nnz：块非零元素个数         
+                       int *subtri_upbound,        // subtri_upbound：子三角形上界             
+                       int *subtri_downbound,      // subtri_downbound：子三角形下界                 
+                       int *subrec_upbound,        // subrec_upbound：子矩形上界             
+                       int *subrec_downbound,      // subrec_downbound：子矩形下界                 
+                       int *subrec_rightbound,     // subrec_rightbound：子矩形右界                 
+                       int *subrec_leftbound,      // subrec_leftbound：子矩形左界                 
+                       int *ptr_size,              // ptr_size：指针大小         
+                       int *idx_size,              // idx_size：索引大小         
+                       int *dcsr_size)             // dcsr_size：CSR大小         
 {
 
     // for (int i = 0; i < n + 1; i++)
@@ -569,10 +570,10 @@ void L_preprocessing(int *cscRowIdxTR_new,
                     if (sizeof(VALUE_TYPE) == 8)
                         cusparseDcsrsv2_bufferSize((trsv_blk[trsv_count]).handle, (trsv_blk[trsv_count]).trans, blk_m[blk_count], 
                         blk_nnz[blk_count], (trsv_blk[trsv_count]).descr,
-                           (double *)d_csrValTR, d_csrRowPtrTR, d_csrColIdxTR, (trsv_blk[trsv_count]).info, &pBufferSize);
+                        (double *)d_csrValTR, d_csrRowPtrTR, d_csrColIdxTR, (trsv_blk[trsv_count]).info, &pBufferSize);
                     else if (sizeof(VALUE_TYPE) == 4)
                         cusparseScsrsv2_bufferSize((trsv_blk[trsv_count]).handle, (trsv_blk[trsv_count]).trans, blk_m[blk_count], blk_nnz[blk_count], (trsv_blk[trsv_count]).descr,
-                           (float *)d_csrValTR, d_csrRowPtrTR, d_csrColIdxTR, (trsv_blk[trsv_count]).info, &pBufferSize);
+                        (float *)d_csrValTR, d_csrRowPtrTR, d_csrColIdxTR, (trsv_blk[trsv_count]).info, &pBufferSize);
                     // pBuffer returned by cudaMalloc is automatically aligned to 128 bytes.
                     cudaMalloc((void **)&(trsv_blk[trsv_count].pBuffer), pBufferSize);
                     if (sizeof(VALUE_TYPE) == 8)

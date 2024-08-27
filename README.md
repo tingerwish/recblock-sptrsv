@@ -4,7 +4,7 @@
 Zhengyang Lu, Yuyao Niu, and Weifeng Liu. 2020. Efficient Block Algorithms for Parallel Sparse Triangular Solve. In 49th International Conference on Parallel Processing - ICPP (ICPP '20), 10 pages. DOI:https://doi.org/10.1145/3404397.3404413
 ## Contact us
 
-If you have any questions about running the code, please contact Zhengyang Lu.    
+If you have any questions about running thfe code, please contact Zhengyang Lu.    
 
 E-mail: 2021211259@student.cup.edu.cn
 ## Introduction

@@ -132,6 +132,7 @@ void recblocking_solver_cuda(int *d_cscColPtrTR,
         int recblock_nnz_ptr = 0;
         for (blk_count = 0; blk_count < sum_block; blk_count++)
         {
+            // 三角块
             if (blk_count % 2 == 0)
             {
                 int cu_flag = 0;
@@ -386,7 +387,9 @@ void recblocking_solver_cuda(int *d_cscColPtrTR,
 
                 cudaDeviceSynchronize();
             }
-            else
+             
+
+            else // 矩阵块
             {
                 int *d_cscColPtrTR_sub;
                 int *d_cscRowIdxTR_sub;
@@ -428,8 +431,7 @@ void recblocking_solver_cuda(int *d_cscColPtrTR,
 
                 pre_store_to_recblockdata<<<num_blocks, num_threads>>>(blk_m[blk_count], d_csrRowPtrTR_sub, idx_offset);
 
-                thrust::exclusive_scan(thrust::device, idx_offset,
-                                       idx_offset + blk_m[blk_count] + 1, idx_offset, recblock_nnz_ptr);
+                thrust::exclusive_scan(thrust::device, idx_offset,idx_offset + blk_m[blk_count] + 1, idx_offset, recblock_nnz_ptr);
 
                 store_to_recblockdata<<<num_blocks, num_threads>>>(blk_m[blk_count], d_csrRowPtrTR_sub, d_csrColIdxTR_sub,
                                                                    d_csrValTR_sub, d_recblock_Index, d_recblock_Val, idx_offset, recblock_nnz_ptr);
@@ -446,8 +448,7 @@ void recblocking_solver_cuda(int *d_cscColPtrTR,
                 cudaMalloc((void **)(&d_longlen), sizeof(int));
                 cudaMalloc((void **)(&d_longrow_idx), blk_m[blk_count] * sizeof(int));
 
-                cal_longrow<<<1, 1>>>(d_i_new, d_lenmax, d_longrow, d_longlen,
-                                      d_longrow_idx, d_csrRowPtrTR_sub, blk_m[blk_count]);
+                cal_longrow<<<1, 1>>>(d_i_new, d_lenmax, d_longrow, d_longlen,d_longrow_idx, d_csrRowPtrTR_sub, blk_m[blk_count]);
 
                 int m_new;
                 cudaMemcpy(&m_new, d_i_new, sizeof(int), cudaMemcpyDeviceToHost);
@@ -667,6 +668,7 @@ void recblocking_solver_cuda(int *d_cscColPtrTR,
         int recblock_nnz_ptr = 0;
         for (blk_count = 0; blk_count < sum_block; blk_count++)
         {
+            // 三角块
             if (blk_count % 2 == 0)
             {
                 int cu_flag = 0;
@@ -683,8 +685,7 @@ void recblocking_solver_cuda(int *d_cscColPtrTR,
                 int downbound = subtri_downbound[blk_count];
                 store_into_subtrimat_ptr<<<num_blocks, num_threads>>>(upbound, downbound, d_cscColPtrTR_new,
                                                                       d_cscRowIdxTR_new, d_cscColPtrTR_sub, substitution);
-                thrust::exclusive_scan(thrust::device, d_cscColPtrTR_sub,
-                                       d_cscColPtrTR_sub + blk_n[blk_count] + 1, d_cscColPtrTR_sub, 0);
+                thrust::exclusive_scan(thrust::device, d_cscColPtrTR_sub,d_cscColPtrTR_sub + blk_n[blk_count] + 1, d_cscColPtrTR_sub, 0);
                 store_into_subtrimat_idxval<<<num_blocks, num_threads>>>(upbound, downbound, d_cscColPtrTR_new, d_cscRowIdxTR_new,
                                                                          d_cscValTR_new, d_cscColPtrTR_sub, d_cscRowIdxTR_sub,
                                                                          d_cscValTR_sub, substitution);
@@ -926,6 +927,7 @@ void recblocking_solver_cuda(int *d_cscColPtrTR,
 
                 cudaDeviceSynchronize();
             }
+            // 矩阵块
             else
             {
                 int *d_cscColPtrTR_sub;
