@@ -246,7 +246,7 @@ int main(int argc,  char ** argv)
         int li = 1;
         for (li = 1; li <= 100; li++)
         {
-            if (m / pow(2, (li+1)) < (device_id == 0 ? 92160 : 58880)) // 92160 (4608x20) is titan rtx, 58880 (2944x20) is rtx 2080
+            if (m / pow(2, (li+1)) < (device_id == 0 ? 92160 : 58880)) // 92160 (4608x20) is titan rtx, 58880 (2944x20) is rtx 2080 , 15360 (768*20) is 1050ti
                 break;
         }
         lv = li;
